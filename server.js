@@ -95,12 +95,21 @@ app.get("/memories/delete/:id", async (req, res) => {
     res.status(500).send("Error deleting location");
   }
 });
-// Start server
+// Start DB connection
 async function startServer() {
   try {
     await sequelize.authenticate();
     await sequelize.sync();
     console.log("SUCCESS connecting to database");
+
+    // Only start server locally
+    if (!process.env.VERCEL) {
+      const PORT = process.env.PORT || 8080;
+      app.listen(PORT, () => {
+        console.log(`Server is running on http://localhost:${PORT}`);
+      });
+    }
+
   } catch (err) {
     console.error("ERROR: connecting to database", err);
     console.log("Please resolve these errors and try again.");
@@ -109,5 +118,5 @@ async function startServer() {
 
 startServer();
 
-// Always export app — required for Vercel to recognize serverless function
+// Required for Vercel
 module.exports = app;

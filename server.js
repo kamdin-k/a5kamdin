@@ -19,7 +19,7 @@
 const HTTP_PORT = process.env.PORT || 8080;
 
 const express = require("express");
-const app = express();
+const app = express(); //new
 app.use(express.static("public"));  
 app.set("view engine", "ejs");      //ejs
 app.use(express.urlencoded({ extended: true })); //forms
@@ -91,6 +91,8 @@ async function startServer() {
     await sequelize.authenticate();
     await sequelize.sync();
     console.log("SUCCESS connecting to database");
+    
+    //new
     if (!process.env.VERCEL) {
       app.listen(HTTP_PORT, () => {
         console.log(`server listening on: http://localhost:${HTTP_PORT}`);
@@ -103,5 +105,7 @@ async function startServer() {
     console.log("Please resolve these errors and try again.");
   }
 }
+
+//new
 startServer();
 module.exports = app;

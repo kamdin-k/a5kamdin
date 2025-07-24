@@ -2,17 +2,12 @@
   "name": "relational-db-starter",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
-  "engines": {
-    "node": "22.x"
-  },
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "tw:build": "tailwindcss build -i ./public/css/tailwind.css -o ./public/css/main.css --watch",
     "start": "node server.js",
-    "deploy": "vercel",
-    "postinstall": "npm rebuild pg",
-    "build": "echo 'no build step'"
+    "deploy": "vercel"
   },
   "keywords": [],
   "author": "",

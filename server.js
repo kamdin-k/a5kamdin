@@ -1,5 +1,3 @@
-//////////////////////
-// FIX server.js for Vercel: Removed app.listen and added export for serverless function
 /********************************************************************************
 * WEB322 – Assignment 05
 *
@@ -18,22 +16,21 @@
 * Name: _______kamdin kianpour___________ Student ID: _____134281229_____
 *
 ********************************************************************************/
-const express = require("express");
-const app = express();
-const path = require("path");
-require("dotenv").config();
-const { Sequelize } = require("sequelize");
-
 const HTTP_PORT = process.env.PORT || 8080;
 
-app.use(express.static("public"));
-app.use(express.urlencoded({ extended: true }));
-app.set("view engine", "ejs");
+const express = require("express");
+const app = express();
+app.use(express.static("public"));  
+app.set("view engine", "ejs");      //ejs
+app.use(express.urlencoded({ extended: true })); //forms
+require("dotenv").config();   
 
-// ✅ Export the app immediately for Vercel
-module.exports = app;
+// Because the pg package was not working in Vercel, I added this
+require('pg');
 
-// ✅ Setup database
+// +++ Database connection code
+// +++ TODO: Remember to add your Neon.tech connection variables to the .env file!!
+const { Sequelize } = require("sequelize");
 const sequelize = new Sequelize(process.env.PGDATABASE, process.env.PGUSER, process.env.PGPASSWORD, {
   host: process.env.PGHOST,
   dialect: "postgres",
@@ -43,64 +40,77 @@ const sequelize = new Sequelize(process.env.PGDATABASE, process.env.PGUSER, proc
   },
 });
 
-// ✅ Define model
+// +++ 4. TODO: Define your database table
 const Location = sequelize.define("Location", {
   name: Sequelize.TEXT,
   category: Sequelize.STRING,
   address: Sequelize.TEXT,
   comments: Sequelize.TEXT,
-  image: Sequelize.TEXT,
+  image: Sequelize.TEXT
 }, {
   createdAt: false,
-  updatedAt: false,
+  updatedAt: false
 });
 
-// ✅ Routes
-app.get("/", async (req, res) => {
+// +++ 5. TODO: Define your server routes
+app.get("/", async (req, res) => {    
   try {
     const locations = await Location.findAll();
-    res.render("home.ejs", { locations, destination: "St. John's, Newfoundland" });
+    return res.render("home.ejs", { locations, destination: "St. John's, Newfoundland" });
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Error retrieving locations");
+    console.log(err);
+    return res.status(500).send("Error retrieving locations");
   }
 });
 
-app.get("/memories/add", (req, res) => {
-  res.render("add.ejs");
+app.get("/memories/add", (req, res) => {    
+  return res.render("add.ejs");
 });
 
 app.post("/memories/add", async (req, res) => {
   try {
     const { name, category, address, comments, image } = req.body;
     await Location.create({ name, category, address, comments, image });
-    res.redirect("/");
+    return res.redirect("/");
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Error adding location");
+    console.log(err);
+    return res.status(500).send("Error adding location");
   }
 });
 
 app.get("/memories/delete/:id", async (req, res) => {
   try {
     await Location.destroy({ where: { id: req.params.id } });
-    res.redirect("/");
+    return res.redirect("/");
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Error deleting location");
+    console.log(err);
+    return res.status(500).send("Error deleting location");
   }
 });
 
-// ✅ Start DB connection only for dev (local) use
+// +++ Function to start serer
+async function startServer() {
+  try {
+    await sequelize.authenticate();
+    await sequelize.sync();
+    console.log("SUCCESS connecting to database");
+  } catch (err) {
+    console.log("ERROR: connecting to database");
+    console.log(err);
+    console.log("Please resolve these errors and try again.");
+  }
+}
 if (process.env.VERCEL !== "1" && process.env.NODE_ENV !== "production") {
-  sequelize.authenticate()
-    .then(() => sequelize.sync())
-    .then(() => {
-      app.listen(HTTP_PORT, () => {
-        console.log("App listening on port " + HTTP_PORT);
-      });
-    })
-    .catch((err) => {
-      console.error("Failed to connect to DB:", err);
+  startServer().then(() => {
+    app.listen(HTTP_PORT, () => {
+      console.log(`server listening on: http://localhost:${HTTP_PORT}`);
     });
+  });
+} else {
+  startServer().then(() => {
+    module.exports = app;
+  }).catch(err => {
+    console.error("Vercel initialization failed:", err);
+    process.exit(1);
+  });
 }

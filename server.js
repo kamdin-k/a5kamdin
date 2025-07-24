@@ -91,23 +91,18 @@ async function startServer() {
     await sequelize.authenticate();
     await sequelize.sync();
     console.log("SUCCESS connecting to database");
+
+    if (!process.env.VERCEL) {
+      app.listen(HTTP_PORT, () => {
+        console.log(`server listening on: http://localhost:${HTTP_PORT}`);
+      });
+    }
+
   } catch (err) {
     console.log("ERROR: connecting to database");
     console.log(err);
     console.log("Please resolve these errors and try again.");
   }
 }
-if (process.env.VERCEL !== "1" && process.env.NODE_ENV !== "production") {
-  startServer().then(() => {
-    app.listen(HTTP_PORT, () => {
-      console.log(`server listening on: http://localhost:${HTTP_PORT}`);
-    });
-  });
-} else {
-  startServer().then(() => {
-    module.exports = app;
-  }).catch(err => {
-    console.error("Vercel initialization failed:", err);
-    process.exit(1);
-  });
-}
+startServer();
+module.exports = app;

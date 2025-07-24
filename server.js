@@ -1,3 +1,5 @@
+//////////////////////
+// FIX server.js for Vercel: Removed app.listen and added export for serverless function
 /********************************************************************************
 * WEB322 – Assignment 05
 *
@@ -24,9 +26,6 @@ app.use(express.static("public"));
 app.set("view engine", "ejs");      //ejs
 app.use(express.urlencoded({ extended: true })); //forms
 require("dotenv").config();   
-
-// Because the pg package was not working in Vercel, I added this
-require('pg');
 
 // +++ Database connection code
 // +++ TODO: Remember to add your Neon.tech connection variables to the .env file!!
@@ -102,15 +101,15 @@ async function startServer() {
 }
 if (process.env.VERCEL !== "1" && process.env.NODE_ENV !== "production") {
   startServer().then(() => {
-    app.listen(HTTP_PORT, () => {
-      console.log(`server listening on: http://localhost:${HTTP_PORT}`);
-    });
+    //////// Removed app.listen as per Vercel requirement
   });
 } else {
   startServer().then(() => {
+    ////////////////////// Export app for Vercel serverless function
     module.exports = app;
   }).catch(err => {
     console.error("Vercel initialization failed:", err);
     process.exit(1);
   });
 }
+</xaiArtifact>

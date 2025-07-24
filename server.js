@@ -59,6 +59,7 @@ app.get("/", async (req, res) => {
     return res.render("home.ejs", { locations, destination: "St. John's, Newfoundland" });
   } catch (err) {
     console.log(err);
+    console.error("Error loading home route:", err);
     return res.status(500).send("Error retrieving locations");
   }
 });

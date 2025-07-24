@@ -18,18 +18,22 @@
 * Name: _______kamdin kianpour___________ Student ID: _____134281229_____
 *
 ********************************************************************************/
-const HTTP_PORT = process.env.PORT || 8080;
-
 const express = require("express");
 const app = express();
-app.use(express.static("public"));  
-app.set("view engine", "ejs");      //ejs
-app.use(express.urlencoded({ extended: true })); //forms
-require("dotenv").config();   
-
-// +++ Database connection code
-// +++ TODO: Remember to add your Neon.tech connection variables to the .env file!!
+const path = require("path");
+require("dotenv").config();
 const { Sequelize } = require("sequelize");
+
+const HTTP_PORT = process.env.PORT || 8080;
+
+app.use(express.static("public"));
+app.use(express.urlencoded({ extended: true }));
+app.set("view engine", "ejs");
+
+// ✅ Export the app immediately for Vercel
+module.exports = app;
+
+// ✅ Setup database
 const sequelize = new Sequelize(process.env.PGDATABASE, process.env.PGUSER, process.env.PGPASSWORD, {
   host: process.env.PGHOST,
   dialect: "postgres",
@@ -39,76 +43,64 @@ const sequelize = new Sequelize(process.env.PGDATABASE, process.env.PGUSER, proc
   },
 });
 
-// +++ 4. TODO: Define your database table
+// ✅ Define model
 const Location = sequelize.define("Location", {
   name: Sequelize.TEXT,
   category: Sequelize.STRING,
   address: Sequelize.TEXT,
   comments: Sequelize.TEXT,
-  image: Sequelize.TEXT
+  image: Sequelize.TEXT,
 }, {
   createdAt: false,
-  updatedAt: false
+  updatedAt: false,
 });
 
-// +++ 5. TODO: Define your server routes
-app.get("/", async (req, res) => {    
+// ✅ Routes
+app.get("/", async (req, res) => {
   try {
     const locations = await Location.findAll();
-    return res.render("home.ejs", { locations, destination: "St. John's, Newfoundland" });
+    res.render("home.ejs", { locations, destination: "St. John's, Newfoundland" });
   } catch (err) {
-    console.log(err);
-    return res.status(500).send("Error retrieving locations");
+    console.error(err);
+    res.status(500).send("Error retrieving locations");
   }
 });
 
-app.get("/memories/add", (req, res) => {    
-  return res.render("add.ejs");
+app.get("/memories/add", (req, res) => {
+  res.render("add.ejs");
 });
 
 app.post("/memories/add", async (req, res) => {
   try {
     const { name, category, address, comments, image } = req.body;
     await Location.create({ name, category, address, comments, image });
-    return res.redirect("/");
+    res.redirect("/");
   } catch (err) {
-    console.log(err);
-    return res.status(500).send("Error adding location");
+    console.error(err);
+    res.status(500).send("Error adding location");
   }
 });
 
 app.get("/memories/delete/:id", async (req, res) => {
   try {
     await Location.destroy({ where: { id: req.params.id } });
-    return res.redirect("/");
+    res.redirect("/");
   } catch (err) {
-    console.log(err);
-    return res.status(500).send("Error deleting location");
+    console.error(err);
+    res.status(500).send("Error deleting location");
   }
 });
 
-// +++ Function to start serer
-async function startServer() {
-  try {
-    await sequelize.authenticate();
-    await sequelize.sync();
-    console.log("SUCCESS connecting to database");
-  } catch (err) {
-    console.log("ERROR: connecting to database");
-    console.log(err);
-    console.log("Please resolve these errors and try again.");
-  }
-}
+// ✅ Start DB connection only for dev (local) use
 if (process.env.VERCEL !== "1" && process.env.NODE_ENV !== "production") {
-  startServer().then(() => {
-    //////// Removed app.listen as per Vercel requirement
-  });
-} else {
-  startServer().then(() => {
-    ////////////////////// Export app for Vercel serverless function
-    module.exports = app;
-  }).catch(err => {
-    console.error("Vercel initialization failed:", err);
-    process.exit(1);
-  });
+  sequelize.authenticate()
+    .then(() => sequelize.sync())
+    .then(() => {
+      app.listen(HTTP_PORT, () => {
+        console.log("App listening on port " + HTTP_PORT);
+      });
+    })
+    .catch((err) => {
+      console.error("Failed to connect to DB:", err);
+    });
 }

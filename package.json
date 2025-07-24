@@ -3,9 +3,16 @@
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "tw:build": "tailwindcss build -i ./public/css/tailwind.css -o ./public/css/main.css --watch",
     "start": "node server.js",
-    "tw:build": "tailwindcss build -i ./public/css/tailwind.css -o ./public/css/main.css --watch"
+    "deploy": "vercel",
+    "postinstall": "npm rebuild pg",
+    "build": "echo 'no build step'"
   },
   "keywords": [],
   "author": "",

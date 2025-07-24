@@ -86,7 +86,6 @@ app.get("/memories/delete/:id", async (req, res) => {
     return res.status(500).send("Error deleting location");
   }
 });
-
 async function startServer() {
   try {
     await sequelize.authenticate();

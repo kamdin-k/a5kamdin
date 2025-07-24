@@ -1,5 +1,7 @@
+//////////////////////
+// FIX server.js for Vercel: Removed app.listen and added export for serverless function
 /********************************************************************************
-* WEB322 – Assignment 05
+* WEB322 â€“ Assignment 05
 *
 * I declare that this assignment is my own work and completed based on my
 * current understanding of the course concepts.
@@ -19,7 +21,7 @@
 const HTTP_PORT = process.env.PORT || 8080;
 
 const express = require("express");
-const app = express(); //new
+const app = express();
 app.use(express.static("public"));  
 app.set("view engine", "ejs");      //ejs
 app.use(express.urlencoded({ extended: true })); //forms
@@ -85,20 +87,11 @@ app.get("/memories/delete/:id", async (req, res) => {
   }
 });
 
-// +++ Function to start serer
 async function startServer() {
   try {
     await sequelize.authenticate();
     await sequelize.sync();
     console.log("SUCCESS connecting to database");
-    
-    //new
-    if (!process.env.VERCEL) {
-      app.listen(HTTP_PORT, () => {
-        console.log(`server listening on: http://localhost:${HTTP_PORT}`);
-      });
-    }
-
   } catch (err) {
     console.log("ERROR: connecting to database");
     console.log(err);
@@ -106,6 +99,5 @@ async function startServer() {
   }
 }
 
-//new
 startServer();
 module.exports = app;

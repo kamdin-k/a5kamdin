@@ -1,7 +1,5 @@
-//////////////////////
-// FIX server.js for Vercel: Removed app.listen and added export for serverless function
 /********************************************************************************
-* WEB322 â€“ Assignment 05
+* WEB322 – Assignment 05
 *
 * I declare that this assignment is my own work and completed based on my
 * current understanding of the course concepts.
@@ -86,6 +84,8 @@ app.get("/memories/delete/:id", async (req, res) => {
     return res.status(500).send("Error deleting location");
   }
 });
+
+// +++ Function to start serer
 async function startServer() {
   try {
     await sequelize.authenticate();
@@ -97,6 +97,17 @@ async function startServer() {
     console.log("Please resolve these errors and try again.");
   }
 }
-
-startServer();
-module.exports = app;
+if (process.env.VERCEL !== "1" && process.env.NODE_ENV !== "production") {
+  startServer().then(() => {
+    app.listen(HTTP_PORT, () => {
+      console.log(`server listening on: http://localhost:${HTTP_PORT}`);
+    });
+  });
+} else {
+  startServer().then(() => {
+    module.exports = app;
+  }).catch(err => {
+    console.error("Vercel initialization failed:", err);
+    process.exit(1);
+  });
+}

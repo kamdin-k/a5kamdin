@@ -19,7 +19,7 @@
 const HTTP_PORT = process.env.PORT || 8080;
 
 const express = require("express");
-const app = express(); //new
+const app = express();
 app.use(express.static("public"));  
 app.set("view engine", "ejs");      //ejs
 app.use(express.urlencoded({ extended: true })); //forms
@@ -91,21 +91,23 @@ async function startServer() {
     await sequelize.authenticate();
     await sequelize.sync();
     console.log("SUCCESS connecting to database");
-    
-    //new
-    if (!process.env.VERCEL) {
-      app.listen(HTTP_PORT, () => {
-        console.log(`server listening on: http://localhost:${HTTP_PORT}`);
-      });
-    }
-
   } catch (err) {
     console.log("ERROR: connecting to database");
     console.log(err);
     console.log("Please resolve these errors and try again.");
   }
 }
-
-//new
-startServer();
-module.exports = app;
+if (process.env.VERCEL !== "1" && process.env.NODE_ENV !== "production") {
+  startServer().then(() => {
+    app.listen(HTTP_PORT, () => {
+      console.log(`server listening on: http://localhost:${HTTP_PORT}`);
+    });
+  });
+} else {
+  startServer().then(() => {
+    module.exports = app;
+  }).catch(err => {
+    console.error("Vercel initialization failed:", err);
+    process.exit(1);
+  });
+}

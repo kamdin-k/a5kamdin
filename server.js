@@ -1,22 +1,21 @@
 /********************************************************************************
-     * WEB322 – Assignment 05
-     *
-     * I declare that this assignment is my own work and completed based on my
-     * current understanding of the course concepts.
-     *
-     * The assignment was completed in accordance with:
-     * a. The Seneca's Academic Integrity Policy
-     * https://www.senecacollege.ca/about/policies/academic-integrity-policy.html
-     *
-     * b. The academic integrity policies noted in the assessment description
-     *
-     * I did NOT use generative AI tools (ChatGPT, Copilot, etc) to produce the code
-     * for this assessment.
-     *
-     * Name: kamdin kianpour
-     * Student ID: 134281229
-     *
-     ********************************************************************************/
+* WEB322 – Assignment 05
+*
+* I declare that this assignment is my own work and completed based on my
+* current understanding of the course concepts.
+*
+* The assignment was completed in accordance with:
+* a. The Seneca's Academic Integrity Policy
+* https://www.senecacollege.ca/about/policies/academic-integrity-policy.html
+*
+* b. The academic integrity policies noted in the assessment description
+*
+* I did NOT use generative AI tools (ChatGPT, Copilot, etc) to produce the code
+* for this assessment.
+*
+* Name: _______kamdin kianpour___________ Student ID: _____134281229_____
+*
+********************************************************************************/
 const HTTP_PORT = process.env.PORT || 8080;
 
 const express = require("express");
@@ -25,14 +24,6 @@ app.use(express.static("public"));
 app.set("view engine", "ejs");      //ejs
 app.use(express.urlencoded({ extended: true })); //forms
 require("dotenv").config();   
-
-// Log environment variables for debugging
-console.log("Environment Variables:", {
-  PGDATABASE: process.env.PGDATABASE,
-  PGHOST: process.env.PGHOST,
-  PGUSER: process.env.PGUSER,
-  PGPASSWORD: process.env.PGPASSWORD
-});
 
 // +++ Database connection code
 // +++ TODO: Remember to add your Neon.tech connection variables to the .env file!!
@@ -64,7 +55,7 @@ app.get("/", async (req, res) => {
     const locations = await Location.findAll();
     return res.render("home.ejs", { locations, destination: "St. John's, Newfoundland" });
   } catch (err) {
-    console.error("Route / error:", err);
+    console.log(err);
     return res.status(500).send("Error retrieving locations");
   }
 });
@@ -79,7 +70,7 @@ app.post("/memories/add", async (req, res) => {
     await Location.create({ name, category, address, comments, image });
     return res.redirect("/");
   } catch (err) {
-    console.error("Route /memories/add error:", err);
+    console.log(err);
     return res.status(500).send("Error adding location");
   }
 });
@@ -89,42 +80,34 @@ app.get("/memories/delete/:id", async (req, res) => {
     await Location.destroy({ where: { id: req.params.id } });
     return res.redirect("/");
   } catch (err) {
-    console.error("Route /memories/delete/:id error:", err);
+    console.log(err);
     return res.status(500).send("Error deleting location");
   }
 });
 
-// +++ Function to start server
+// +++ Function to start serer
 async function startServer() {
-  try {            
-    await sequelize.authenticate();        
+  try {
+    await sequelize.authenticate();
     await sequelize.sync();
     console.log("SUCCESS connecting to database");
-    console.log("STARTING Express web server");        
-    app.listen(HTTP_PORT, () => {     
-      console.log(`server listening on: http://localhost:${HTTP_PORT}`); 
-    });    
-  } catch (err) {        
-    console.log("ERROR: connecting to database");        
+  } catch (err) {
+    console.log("ERROR: connecting to database");
     console.log(err);
     console.log("Please resolve these errors and try again.");
   }
 }
-
-// Run locally, export for Vercel with improved error handling
 if (process.env.VERCEL !== "1" && process.env.NODE_ENV !== "production") {
-  startServer();
+  startServer().then(() => {
+    app.listen(HTTP_PORT, () => {
+      console.log(`server listening on: http://localhost:${HTTP_PORT}`);
+    });
+  });
 } else {
-  (async () => {
-    try {
-      await sequelize.authenticate();
-      await sequelize.sync();
-      console.log("Database initialized for Vercel");
-      module.exports = app;
-    } catch (err) {
-      console.error("Vercel initialization failed:", err);
-      console.error("Check environment variables or database connection:", err.message);
-      throw err; // Vercel will log this
-    }
-  })();
+  startServer().then(() => {
+    module.exports = app;
+  }).catch(err => {
+    console.error("Vercel initialization failed:", err);
+    process.exit(1);
+  });
 }

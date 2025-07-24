@@ -25,6 +25,9 @@ app.set("view engine", "ejs");      //ejs
 app.use(express.urlencoded({ extended: true })); //forms
 require("dotenv").config();   
 
+// Because the pg package was not working in Vercel, I added this
+require('pg');
+
 // +++ Database connection code
 // +++ TODO: Remember to add your Neon.tech connection variables to the .env file!!
 const { Sequelize } = require("sequelize");

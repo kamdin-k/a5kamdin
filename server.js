@@ -91,6 +91,7 @@ async function startServer() {
     await sequelize.authenticate();
     await sequelize.sync();
     console.log("SUCCESS connecting to database");
+    
 
     if (!process.env.VERCEL) {
       app.listen(HTTP_PORT, () => {

@@ -95,7 +95,6 @@ app.get("/memories/delete/:id", async (req, res) => {
     res.status(500).send("Error deleting location");
   }
 });
-
 // Start server
 async function startServer() {
   try {
@@ -108,19 +107,7 @@ async function startServer() {
   }
 }
 
-if (process.env.VERCEL !== "1" && process.env.NODE_ENV !== "production") {
-  startServer().then(() => {
-    app.listen(HTTP_PORT, () => {
-      console.log(`Server running at http://localhost:${HTTP_PORT}`);
-    });
-  });
-} else {
-  startServer()
-    .then(() => {
-      module.exports = app;
-    })
-    .catch(err => {
-      console.error("Vercel startup failed:", err);
-      process.exit(1);
-    });
-}
+startServer();
+
+// Always export app — required for Vercel to recognize serverless function
+module.exports = app;

@@ -100,17 +100,6 @@ async function startServer() {
     console.log("Please resolve these errors and try again.");
   }
 }
-if (process.env.VERCEL !== "1" && process.env.NODE_ENV !== "production") {
-  startServer().then(() => {
-    app.listen(HTTP_PORT, () => {
-      console.log(`server listening on: http://localhost:${HTTP_PORT}`);
-    });
-  });
-} else {
-  startServer().then(() => {
-    module.exports = app;
-  }).catch(err => {
-    console.error("Vercel initialization failed:", err);
-    process.exit(1);
-  });
-}
+startServer();
+
+module.exports = app;
